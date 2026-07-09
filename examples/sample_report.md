@@ -7,8 +7,8 @@
 
 ## Outcome classes
 
-- **HARD_UNUSUAL:** 3
 - **OK:** 1
+- **HARD_UNUSUAL:** 3
 
 ## Fan position pass rate
 
@@ -19,4 +19,6 @@
 | 2 | 0 | 1 | 0.0% |
 | 3 | 0 | 1 | 0.0% |
 
-Synthetic fixture demonstrating first-in-burst pass + rest hard-gated.
+## Notes
+
+Synthetic fixture: one multi-output burst where only the first fire-order position succeeds — the UI fan-out × per-call scoring pattern in miniature.

@@ -5,12 +5,22 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "flowfixer"
 version = "0.1.0"
-description = "Reliability toolkit for Google Flow: sanitize HARs, classify throttles, measure UI fan-out."
+description = "Reliability toolkit for Google Flow — HAR forensics, fan-out analysis, eng brief. Not a bypass tool."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [{ name = "coldbricks" }]
-keywords = ["google-flow", "har", "reliability", "recaptcha", "veo"]
+keywords = [
+  "google-flow",
+  "google-labs",
+  "har",
+  "forensics",
+  "reliability",
+  "recaptcha",
+  "veo",
+  "rate-limit",
+  "observability",
+]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Environment :: Console",
