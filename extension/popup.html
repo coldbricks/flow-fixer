@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Flow Fixer</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header>
+      <div class="brand">
+        <span class="logo">FF</span>
+        <div>
+          <h1>Flow Fixer</h1>
+          <p class="tag">Live reliability · read-only</p>
+        </div>
+      </div>
+      <div id="levelPill" class="pill idle">idle</div>
+    </header>
+
+    <section class="stats" id="stats">
+      <div class="stat">
+        <div class="n" id="nTotal">0</div>
+        <div class="l">generates</div>
+      </div>
+      <div class="stat ok">
+        <div class="n" id="nOk">0</div>
+        <div class="l">ok</div>
+      </div>
+      <div class="stat soft">
+        <div class="n" id="nSoft">0</div>
+        <div class="l">soft</div>
+      </div>
+      <div class="stat hard">
+        <div class="n" id="nHard">0</div>
+        <div class="l">hard</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Fan position pass %</h2>
+      <div id="fan" class="fan empty">Generate on Flow to populate</div>
+    </section>
+
+    <section class="card">
+      <h2>Recent</h2>
+      <div id="feed" class="feed empty">Waiting for generate calls on labs.google…</div>
+    </section>
+
+    <section class="actions">
+      <label class="toggle">
+        <input type="checkbox" id="mon" checked />
+        <span>Monitoring</span>
+      </label>
+      <button type="button" id="btnExport" class="ghost">Export JSON</button>
+      <button type="button" id="btnClear" class="ghost danger">Clear</button>
+    </section>
+
+    <footer>
+      <a href="https://labs.google/fx/tools/flow" target="_blank" rel="noreferrer">Open Flow</a>
+      <span class="dot">·</span>
+      <span>No HAR export needed</span>
+      <span class="dot">·</span>
+      <span>Not a bypass tool</span>
+    </footer>
+
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

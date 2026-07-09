@@ -28,6 +28,19 @@ It measures the product’s own request physics so users and eng can see the sam
   <img src="docs/assets/cli_preview.png" alt="flowfixer analyze terminal preview" width="820"/>
 </p>
 
+### Browser extension (no HAR export)
+
+Watch generate calls **live** while you use Flow — soft vs hard vs filter, fan-position pass rates, toolbar badge.
+
+```text
+Chrome → chrome://extensions → Developer mode → Load unpacked
+         → select the extension/ folder → refresh labs.google
+```
+
+Full steps: **[extension/README.md](extension/README.md)**
+
+### Python CLI (deep HAR forensics)
+
 ```bash
 pip install -e .
 python -m flowfixer sanitize raw.har -o safe.har
@@ -75,8 +88,9 @@ Full write-up + fix proposals with acceptance tests: **[docs/ENG_BRIEF.md](docs/
 
 ## Commands
 
-| Command | Purpose |
+| Surface | Purpose |
 |---------|---------|
+| **Browser extension** | Live monitor on `labs.google` — no HAR file |
 | `flowfixer sanitize` | Redact cookies, auth, tokens, project/session IDs, credit numbers |
 | `flowfixer analyze` | Soft vs hard vs filter · burst clusters · fan-position pass rates |
 | `flowfixer report` | Markdown summary for feedback / bugs |
@@ -130,6 +144,7 @@ Issues asking how to evade abuse detection will be closed. See [SECURITY.md](SEC
 ## Project layout
 
 ```text
+extension/           Chrome/Edge MV3 live monitor (load unpacked)
 flowfixer/           CLI + library
 docs/
   ENG_BRIEF.md       Staff-eng incident + fixes
