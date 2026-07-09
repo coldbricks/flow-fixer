@@ -35,7 +35,7 @@ Staff-eng write-up: **[docs/ENG_BRIEF.md](docs/ENG_BRIEF.md)** — the document 
 
 ### Browser extension (no HAR export)
 
-Watch generate calls **live** while you use Flow — soft vs hard vs filter, fan-position pass rates, toolbar badge.
+Live monitor **plus AUTO-THROTTLE** — a speed ladder from **Molasses** (way under the scorer) to **Casey Jones** (full send). Auto downshifts on soft/hard, serializes fan-out so you don’t overspeed into sticky unusual-activity.
 
 ```text
 Chrome → chrome://extensions → Developer mode → Load unpacked

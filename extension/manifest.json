@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
   "name": "Flow Fixer",
-  "version": "0.1.0",
-  "description": "Live reliability monitor for Google Flow — soft throttle vs unusual activity, UI fan-out. Read-only. Not a bypass tool.",
-  "permissions": ["storage"],
+  "version": "0.2.0",
+  "description": "Live Flow reliability + AUTO-THROTTLE pace ladder (Molasses → Casey Jones). Read-only scoring awareness — not a bypass tool.",
+  "permissions": ["storage", "tabs"],
   "host_permissions": ["https://labs.google/*"],
   "background": {
     "service_worker": "background.js",

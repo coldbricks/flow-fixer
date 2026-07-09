@@ -7,21 +7,56 @@
     <link rel="stylesheet" href="popup.css" />
   </head>
   <body>
+    <div class="glow"></div>
+
     <header>
       <div class="brand">
         <span class="logo">FF</span>
         <div>
           <h1>Flow Fixer</h1>
-          <p class="tag">Live reliability · read-only</p>
+          <p class="tag">AUTO-THROTTLE · live reliability</p>
         </div>
       </div>
       <div id="levelPill" class="pill idle">idle</div>
     </header>
 
-    <section class="stats" id="stats">
+    <section class="hero card">
+      <div class="hero-top">
+        <div>
+          <div class="kicker">Current gear</div>
+          <div id="speedName" class="speed-name">The Job</div>
+          <div id="speedSub" class="speed-sub">paid to ship</div>
+        </div>
+        <div id="speedEmoji" class="speed-emoji">💼</div>
+      </div>
+      <p id="speedBlurb" class="speed-blurb">
+        Production cadence. Work the grid, don’t redline it.
+      </p>
+      <div id="hardBanner" class="hard-banner hidden">
+        <span id="hardMsg">Hard gate cool-down active.</span>
+        <button type="button" id="btnClearHard" class="linkish">Force clear cool-down</button>
+      </div>
+    </section>
+
+    <section class="card ladder-card">
+      <div class="row-between">
+        <h2>Speed ladder</h2>
+        <label class="toggle tight">
+          <input type="checkbox" id="autoMode" checked />
+          <span>Auto shift</span>
+        </label>
+      </div>
+      <div id="ladder" class="ladder"></div>
+      <p class="hint">
+        Slow = molasses under the scorer. Fast = Casey Jones at the whistle.
+        Auto downshifts on soft/hard, climbs on clean OK streaks.
+      </p>
+    </section>
+
+    <section class="stats">
       <div class="stat">
         <div class="n" id="nTotal">0</div>
-        <div class="l">generates</div>
+        <div class="l">gens</div>
       </div>
       <div class="stat ok">
         <div class="n" id="nOk">0</div>
@@ -44,22 +79,26 @@
 
     <section class="card">
       <h2>Recent</h2>
-      <div id="feed" class="feed empty">Waiting for generate calls on labs.google…</div>
+      <div id="feed" class="feed empty">Waiting for generate calls…</div>
     </section>
 
     <section class="actions">
       <label class="toggle">
-        <input type="checkbox" id="mon" checked />
-        <span>Monitoring</span>
+        <input type="checkbox" id="autoThrottle" checked />
+        <span>AUTO-THROTTLE</span>
       </label>
-      <button type="button" id="btnExport" class="ghost">Export JSON</button>
+      <label class="toggle">
+        <input type="checkbox" id="mon" checked />
+        <span>Monitor</span>
+      </label>
+    </section>
+    <section class="actions secondary">
+      <button type="button" id="btnExport" class="ghost">Export</button>
       <button type="button" id="btnClear" class="ghost danger">Clear</button>
     </section>
 
     <footer>
-      <a href="https://labs.google/fx/tools/flow" target="_blank" rel="noreferrer">Open Flow</a>
-      <span class="dot">·</span>
-      <span>No HAR export needed</span>
+      <span>Paces <em>your</em> clicks — doesn’t forge captcha</span>
       <span class="dot">·</span>
       <span>Not a bypass tool</span>
     </footer>

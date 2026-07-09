@@ -16,16 +16,41 @@ Read-only. Does **not** change requests, forge reCAPTCHA, or automate generation
 
 Pin the extension for a live badge (`ok` / `~` soft / `!` hard).
 
+## AUTO-THROTTLE (the fun part)
+
+Optional **pace control** on *your* generate calls. Does not forge captcha or strip tokens.
+It **serializes / delays** requests so multi-output and Retry don’t redline the scorer.
+
+### Speed ladder (slow → yeehaw)
+
+| Gear | Vibe | Gap (approx) |
+|------|------|--------------|
+| 🧊 **Molasses** | in January — way under throttle | ~9s |
+| 💧 **Water** | room temp | ~4.5s |
+| 🚶 **Brisk Walk** | coffee in hand | ~2.5s |
+| 💼 **The Job** | paid to ship (default) | ~1.2s |
+| 🎸 **Highway Star** | Deep Purple | ~0.6s |
+| 🐎 **Black Beauty** | full gallop | ~0.3s |
+| 🚂 **Casey Jones** | danger at the wheel | parallel / full send |
+
+**Auto shift (default ON):**
+- soft throttle → downshift 2 gears  
+- hard unusual → **Molasses** + ~12 min cool-down hold  
+- clean OK streak → gradual upshift  
+
+On-page toast when it downshifts. Toolbar badge: `⏱` armed, `~` soft, `!` / `❄` hard.
+
+Turn **AUTO-THROTTLE** off anytime to go pure monitor mode.
+
 ## What you’ll see
 
 | UI | Meaning |
 |----|---------|
-| **ok / soft / hard** pill | Session health from captured generate calls |
-| **generates · ok · soft · hard** | Counters |
-| **Fan position pass %** | First-in-burst vs tail — the UI fan-out signature |
-| **Recent** | Latest generate status + model + class |
-| **Export JSON** | Sanitized event list (no tokens/prompts) |
-| **Clear** | Reset session buffer |
+| **Speed ladder** | Pick a gear or let Auto shift drive |
+| **ok / soft / hard** pill | Session health |
+| **Fan position pass %** | First-in-burst vs tail |
+| **Recent** | Status + model + pace delay |
+| **Export** | Sanitized JSON (no tokens/prompts) |
 
 ## How it works
 

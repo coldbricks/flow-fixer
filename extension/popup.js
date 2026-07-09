@@ -1,9 +1,61 @@
-function cmd(cmd, extra = {}) {
-  return chrome.runtime.sendMessage({ channel: "flow-fixer-cmd", cmd, ...extra });
+import { SPEEDS, SPEED_BY_ID } from "./lib/speeds.js";
+
+function cmd(cmdName, extra = {}) {
+  return chrome.runtime.sendMessage({
+    channel: "flow-fixer-cmd",
+    cmd: cmdName,
+    ...extra,
+  });
 }
 
 function fmtPct(n) {
   return `${n.toFixed(0)}%`;
+}
+
+function fmtGap(ms) {
+  if (!ms) return "parallel";
+  if (ms >= 1000) return `${(ms / 1000).toFixed(1)}s gap`;
+  return `${ms}ms gap`;
+}
+
+function renderLadder(activeId) {
+  const el = document.getElementById("ladder");
+  el.innerHTML = SPEEDS.map((s) => {
+    const active = s.id === activeId ? "active" : "";
+    return `<button type="button" class="gear ${active}" data-speed="${s.id}">
+      <span class="em">${s.emoji}</span>
+      <span><div class="nm">${s.name}</div><div class="sm">${s.sub}</div></span>
+      <span class="gap">${fmtGap(s.gapMs)}</span>
+    </button>`;
+  }).join("");
+
+  el.querySelectorAll(".gear").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const id = btn.getAttribute("data-speed");
+      await cmd("setSpeed", { speedId: id });
+      // manual pick turns off pure auto climb? keep autoMode as user set
+      refresh();
+    });
+  });
+}
+
+function renderHero(speedId, state) {
+  const s = SPEED_BY_ID[speedId] || SPEED_BY_ID.job;
+  document.getElementById("speedName").textContent = s.name;
+  document.getElementById("speedSub").textContent = s.sub;
+  document.getElementById("speedEmoji").textContent = s.emoji;
+  document.getElementById("speedBlurb").textContent = s.blurb;
+
+  const hard = document.getElementById("hardBanner");
+  const until = state.hardUntil || 0;
+  if (until > Date.now()) {
+    hard.classList.remove("hidden");
+    const sec = Math.ceil((until - Date.now()) / 1000);
+    document.getElementById("hardMsg").textContent =
+      `Hard gate cool-down · ~${Math.ceil(sec / 60)} min left (Molasses). `;
+  } else {
+    hard.classList.add("hidden");
+  }
 }
 
 function render(summary, state) {
@@ -26,10 +78,14 @@ function render(summary, state) {
   document.getElementById("nSoft").textContent = summary.soft || 0;
   document.getElementById("nHard").textContent = summary.hard || 0;
 
-  const mon = document.getElementById("mon");
-  mon.checked = state.monitoring !== false;
+  document.getElementById("mon").checked = state.monitoring !== false;
+  document.getElementById("autoThrottle").checked = state.autoThrottle !== false;
+  document.getElementById("autoMode").checked = state.autoMode !== false;
 
-  // Fan
+  const speedId = state.speedId || "job";
+  renderHero(speedId, state);
+  renderLadder(speedId);
+
   const fanEl = document.getElementById("fan");
   const fan = summary.fan || [];
   if (!fan.length) {
@@ -50,12 +106,11 @@ function render(summary, state) {
       .join("");
   }
 
-  // Feed
   const feed = document.getElementById("feed");
   const events = [...(state.events || [])].reverse().slice(0, 40);
   if (!events.length) {
     feed.className = "feed empty";
-    feed.textContent = "Waiting for generate calls on labs.google…";
+    feed.textContent = "Waiting for generate calls…";
   } else {
     feed.className = "feed";
     feed.innerHTML = events
@@ -65,9 +120,13 @@ function render(summary, state) {
           minute: "2-digit",
           second: "2-digit",
         });
+        const paced =
+          e.paced && e.paced.delayedMs
+            ? ` · paced ${e.paced.delayedMs}ms`
+            : "";
         return `<div class="ev">
           <span class="st ${e.sev}">${e.status}</span>
-          <span class="meta">${t} · ${e.model || "?"}</span>
+          <span class="meta">${t} · ${e.model || "?"}${paced}</span>
           <span class="cls" title="${e.cls}">${e.cls}</span>
         </div>`;
       })
@@ -86,8 +145,23 @@ document.getElementById("btnClear").addEventListener("click", async () => {
   refresh();
 });
 
+document.getElementById("btnClearHard").addEventListener("click", async () => {
+  await cmd("clearHard");
+  refresh();
+});
+
 document.getElementById("mon").addEventListener("change", async (e) => {
   await cmd("setMonitoring", { value: e.target.checked });
+});
+
+document.getElementById("autoThrottle").addEventListener("change", async (e) => {
+  await cmd("setAutoThrottle", { value: e.target.checked });
+  refresh();
+});
+
+document.getElementById("autoMode").addEventListener("change", async (e) => {
+  await cmd("setAutoMode", { value: e.target.checked });
+  refresh();
 });
 
 document.getElementById("btnExport").addEventListener("click", async () => {
@@ -104,15 +178,13 @@ document.getElementById("btnExport").addEventListener("click", async () => {
   try {
     await navigator.clipboard.writeText(text);
   } catch {
-    /* download is enough */
+    /* ignore */
   }
 });
 
 chrome.runtime.onMessage.addListener((msg) => {
-  if (msg && msg.channel === "flow-fixer-update") {
-    refresh();
-  }
+  if (msg && msg.channel === "flow-fixer-update") refresh();
 });
 
 refresh();
-setInterval(refresh, 1500);
+setInterval(refresh, 1200);
