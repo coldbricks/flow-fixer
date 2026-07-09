@@ -2,7 +2,8 @@
  * Service worker: events, AUTO-THROTTLE, webRequest backup, badge.
  */
 import { classify, severity, summarize } from "./lib/classify.js";
-import { isGenerateUrl, contentLength } from "./lib/match.js";
+import { isGenerateUrl, contentLength, endpointLabel } from "./lib/match.js";
+import { redactUrl } from "./lib/privacy.js";
 import {
   SPEEDS,
   SPEED_BY_ID,
@@ -14,7 +15,8 @@ import {
 } from "./lib/speeds.js";
 
 const MAX_EVENTS = 500;
-const STORAGE_KEY = "flowFixerState";
+const SESSION_KEY = "flowFixerState";
+const PREFS_KEY = "flowFixerPrefs";
 
 const defaultState = () => ({
   events: [],
@@ -27,7 +29,6 @@ const defaultState = () => ({
   okStreak: 0,
   lastLevel: "idle",
   lastToast: null,
-  // diagnostics
   injectReadyAt: 0,
   injectPings: 0,
   webRequestHits: 0,
@@ -35,13 +36,31 @@ const defaultState = () => ({
   lastActivityAt: 0,
 });
 
+async function loadPrefs() {
+  const data = await chrome.storage.local.get(PREFS_KEY);
+  return data[PREFS_KEY] || {};
+}
+
+async function savePrefs(state) {
+  await chrome.storage.local.set({
+    [PREFS_KEY]: {
+      monitoring: state.monitoring !== false,
+      autoThrottle: !!state.autoThrottle,
+      autoMode: state.autoMode !== false,
+      speedId: state.speedId || DEFAULT_SPEED_ID,
+    },
+  });
+}
+
 async function loadState() {
-  const data = await chrome.storage.session.get(STORAGE_KEY);
-  return { ...defaultState(), ...(data[STORAGE_KEY] || {}) };
+  const data = await chrome.storage.session.get(SESSION_KEY);
+  const prefs = await loadPrefs();
+  return { ...defaultState(), ...prefs, ...(data[SESSION_KEY] || {}) };
 }
 
 async function saveState(state) {
-  await chrome.storage.session.set({ [STORAGE_KEY]: state });
+  await chrome.storage.session.set({ [SESSION_KEY]: state });
+  await savePrefs(state);
 }
 
 function publicConfig(state) {
@@ -125,12 +144,14 @@ async function recordGenerate(ev, source) {
     respSnippet: (ev.respText || "").slice(0, 280),
   };
 
+  // never store raw project paths
+  full.url = redactUrl(full.url);
   state.events.push(full);
   if (state.events.length > MAX_EVENTS) {
     state.events = state.events.slice(-MAX_EVENTS);
   }
   state.lastActivityAt = Date.now();
-  state.lastUrlSample = (ev.url || "").slice(0, 160);
+  state.lastUrlSample = endpointLabel(ev.url || full.url);
 
   const summary = summarize(state.events);
   let level = summary.level;
@@ -228,7 +249,7 @@ chrome.webRequest.onCompleted.addListener(
       const state = await loadState();
       if (!state.monitoring) return;
       state.webRequestHits = (state.webRequestHits || 0) + 1;
-      state.lastUrlSample = details.url.split("?")[0].slice(0, 160);
+      state.lastUrlSample = endpointLabel(details.url);
       state.lastActivityAt = Date.now();
       await saveState(state);
 
@@ -351,33 +372,50 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
         sendResponse({ ok: true });
         return;
       }
-      if (msg.cmd === "export") {
+      if (msg.cmd === "export" || msg.cmd === "copyReport") {
         const state = await loadState();
         const summary = summarize(state.events);
-        sendResponse({
-          ok: true,
-          report: {
-            tool: "flow-fixer-extension",
-            version: "0.3.0",
-            exportedAt: new Date().toISOString(),
-            sessionStartedAt: new Date(state.sessionStartedAt).toISOString(),
-            autoThrottle: state.autoThrottle,
-            autoMode: state.autoMode,
-            speedId: state.speedId,
-            injectReadyAt: state.injectReadyAt,
-            webRequestHits: state.webRequestHits,
-            summary,
-            events: state.events.map((e) => ({
-              startedAt: new Date(e.startedAt).toISOString(),
-              status: e.status,
-              cls: e.cls,
-              model: e.model,
-              batchId: e.batchId,
-              paced: e.paced,
-              source: e.source,
-            })),
-          },
-        });
+        const report = {
+          tool: "flow-fixer-extension",
+          version: "0.4.0",
+          exportedAt: new Date().toISOString(),
+          sessionStartedAt: new Date(state.sessionStartedAt).toISOString(),
+          autoThrottle: state.autoThrottle,
+          autoMode: state.autoMode,
+          speedId: state.speedId,
+          injectReadyAt: state.injectReadyAt,
+          webRequestHits: state.webRequestHits,
+          lastUrlSample: endpointLabel(state.lastUrlSample || ""),
+          summary,
+          events: state.events.map((e) => ({
+            startedAt: new Date(e.startedAt).toISOString(),
+            status: e.status,
+            cls: e.cls,
+            model: e.model,
+            // batchId redacted — can fingerprint projects
+            paced: e.paced,
+            source: e.source,
+            url: redactUrl(e.url || ""),
+          })),
+        };
+        const markdown = [
+          `# Flow Fixer session report`,
+          ``,
+          `- Exported: ${report.exportedAt}`,
+          `- Session start: ${report.sessionStartedAt}`,
+          `- Gear: ${report.speedId} · autoThrottle=${report.autoThrottle} · autoShift=${report.autoMode}`,
+          `- Generates: ${summary.total} · OK ${summary.ok} · soft ${summary.soft} · hard ${summary.hard} · filter ${summary.filter || 0} · pass ${summary.passPct || 0}%`,
+          `- Endpoint sample: ${report.lastUrlSample || "n/a"}`,
+          ``,
+          `## Fan position (top)`,
+          ...(summary.fan || [])
+            .slice(0, 8)
+            .map((r) => `- pos ${r.pos}: ${r.pct.toFixed(0)}% (${r.ok}/${r.total})`),
+          ``,
+          `_Local forensics only. No prompts/tokens. Not affiliated with Google._`,
+          ``,
+        ].join("\n");
+        sendResponse({ ok: true, report, markdown });
         return;
       }
       sendResponse({ ok: false, error: "unknown cmd" });

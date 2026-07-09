@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Flow Fixer",
-  "version": "0.3.0",
-  "description": "Live Flow reliability monitor + optional AUTO-THROTTLE (Molasses→Casey Jones). Local forensics — not a bypass tool.",
+  "version": "0.4.0",
+  "description": "Live Flow reliability monitor + optional AUTO-THROTTLE. Project IDs redacted. Local only — not a bypass tool.",
   "permissions": ["storage", "tabs", "webRequest"],
   "host_permissions": [
     "https://labs.google/*",

@@ -320,6 +320,36 @@ h1 {
   padding: 0 12px 10px;
 }
 
+.stats.stats5 {
+  grid-template-columns: repeat(5, 1fr);
+}
+
+.stat.filter .n {
+  color: var(--purple);
+}
+
+.pass-line {
+  margin: -4px 14px 10px;
+  font-size: 11px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.toast-msg {
+  margin: 0 12px 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(90, 169, 255, 0.12);
+  border: 1px solid rgba(90, 169, 255, 0.35);
+  color: var(--blue);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.toast-msg.hidden {
+  display: none;
+}
+
 .stat {
   background: var(--panel);
   border: 1px solid var(--border);

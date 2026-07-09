@@ -68,8 +68,9 @@ Full extension docs: **[extension/README.md](extension/README.md)**
 | Fan-position pass rates | UI burst shape |
 | **AUTO-THROTTLE** | Optional; default on. Paces/serializes *your* generate calls |
 | Speed ladder | Molasses → Casey Jones (see below) |
-| Export JSON | Last **500** events; no prompts/tokens |
-| Diagnostics strip | Inject heartbeat + network hit count |
+| Export JSON / **Copy report** | Last **500** events; project IDs redacted; no prompts/tokens |
+| Diagnostics strip | Inject heartbeat + net hits; **project UUIDs redacted** for safer screenshots |
+| Settings persist | Auto-throttle / monitor / gear survive browser restart |
 
 **AUTO-THROTTLE off** = monitor only (no pacing).  
 **Casey Jones** = full parallel fan-out — will trip soft/hard quickly under load; use intentionally.

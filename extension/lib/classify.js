@@ -115,11 +115,16 @@ export function summarize(events) {
   const hard = (classHist.HARD_UNUSUAL || 0) + (classHist.HARD_403 || 0);
   const soft = classHist.SOFT_THROTTLE || 0;
   const ok = classHist.OK || 0;
+  const filter = Object.entries(classHist)
+    .filter(([k]) => k.startsWith("FILTER") || k.includes("SEXUAL") || k.includes("UNSAFE"))
+    .reduce((a, [, v]) => a + v, 0);
   let level = "idle";
   if (hard) level = "hard";
   else if (soft) level = "soft";
   else if (ok) level = "ok";
   else if (events.length) level = "other";
+
+  const passPct = events.length ? Math.round((100 * ok) / events.length) : 0;
 
   return {
     total: events.length,
@@ -132,5 +137,7 @@ export function summarize(events) {
     hard,
     soft,
     ok,
+    filter,
+    passPct,
   };
 }

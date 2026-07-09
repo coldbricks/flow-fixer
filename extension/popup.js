@@ -1,4 +1,5 @@
 import { SPEEDS, SPEED_BY_ID } from "./lib/speeds.js";
+import { redactUrl } from "./lib/privacy.js";
 
 function cmd(cmdName, extra = {}) {
   return chrome.runtime.sendMessage({
@@ -18,6 +19,14 @@ function fmtGap(ms) {
   return `${ms}ms gap`;
 }
 
+function flash(msg) {
+  const el = document.getElementById("toastMsg");
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.remove("hidden");
+  setTimeout(() => el.classList.add("hidden"), 2200);
+}
+
 function renderLadder(activeId) {
   const el = document.getElementById("ladder");
   el.innerHTML = SPEEDS.map((s) => {
@@ -33,7 +42,6 @@ function renderLadder(activeId) {
     btn.addEventListener("click", async () => {
       const id = btn.getAttribute("data-speed");
       await cmd("setSpeed", { speedId: id });
-      // manual pick turns off pure auto climb? keep autoMode as user set
       refresh();
     });
   });
@@ -50,9 +58,13 @@ function renderHero(speedId, state) {
   const until = state.hardUntil || 0;
   if (until > Date.now()) {
     hard.classList.remove("hidden");
-    const sec = Math.ceil((until - Date.now()) / 1000);
+    const sec = Math.max(0, Math.ceil((until - Date.now()) / 1000));
+    const m = Math.floor(sec / 60);
+    const sRem = sec % 60;
     document.getElementById("hardMsg").textContent =
-      `Hard gate cool-down · ~${Math.ceil(sec / 60)} min left (Molasses). `;
+      m > 0
+        ? `Hard gate cool-down · ${m}m ${sRem}s left (Molasses). `
+        : `Hard gate cool-down · ${sRem}s left (Molasses). `;
   } else {
     hard.classList.add("hidden");
   }
@@ -75,7 +87,6 @@ function render(summary, state, displayLevel) {
               ? "idle · open Flow"
               : level;
 
-  // diagnostics strip
   const diag = document.getElementById("diag");
   if (diag) {
     const inj = state.injectReadyAt
@@ -84,7 +95,7 @@ function render(summary, state, displayLevel) {
     const wr = `net hits: ${state.webRequestHits || 0}`;
     const n = `gens: ${(state.events && state.events.length) || 0}`;
     const sample = state.lastUrlSample
-      ? state.lastUrlSample.replace(/^https:\/\/[^/]+/, "")
+      ? redactUrl(state.lastUrlSample)
       : "no generate URL yet";
     diag.textContent = `${inj} · ${wr} · ${n}\n${sample}`;
   }
@@ -93,6 +104,14 @@ function render(summary, state, displayLevel) {
   document.getElementById("nOk").textContent = summary.ok || 0;
   document.getElementById("nSoft").textContent = summary.soft || 0;
   document.getElementById("nHard").textContent = summary.hard || 0;
+  document.getElementById("nFilter").textContent = summary.filter || 0;
+  const pass = document.getElementById("passLine");
+  if (pass) {
+    pass.textContent =
+      summary.total > 0
+        ? `pass rate ${summary.passPct ?? 0}% · gear ${state.speedId || "job"}`
+        : "pass rate — generate on Flow to start";
+  }
 
   document.getElementById("mon").checked = state.monitoring !== false;
   document.getElementById("autoThrottle").checked = state.autoThrottle !== false;
@@ -158,11 +177,13 @@ async function refresh() {
 
 document.getElementById("btnClear").addEventListener("click", async () => {
   await cmd("clear");
+  flash("Session cleared");
   refresh();
 });
 
 document.getElementById("btnClearHard").addEventListener("click", async () => {
   await cmd("clearHard");
+  flash("Cool-down cleared");
   refresh();
 });
 
@@ -196,6 +217,18 @@ document.getElementById("btnExport").addEventListener("click", async () => {
   } catch {
     /* ignore */
   }
+  flash("JSON exported (+ copied if allowed)");
+});
+
+document.getElementById("btnCopy").addEventListener("click", async () => {
+  const res = await cmd("copyReport");
+  if (!res || !res.markdown) return;
+  try {
+    await navigator.clipboard.writeText(res.markdown);
+    flash("Markdown report copied");
+  } catch {
+    flash("Clipboard blocked — try Export JSON");
+  }
 });
 
 chrome.runtime.onMessage.addListener((msg) => {
@@ -203,4 +236,4 @@ chrome.runtime.onMessage.addListener((msg) => {
 });
 
 refresh();
-setInterval(refresh, 1200);
+setInterval(refresh, 1000);

@@ -4,7 +4,8 @@ export function isGenerateUrl(url) {
   if (!url || typeof url !== "string") return false;
   if (!/aisandbox-pa\.googleapis\.com/i.test(url)) return false;
   // status polls / telemetry
-  if (/batchCheck|Status|LogFrontend|batchLog/i.test(url)) return false;
+  if (/batchCheck|Status|LogFrontend|batchLog|uploadImage|credits|Workflows/i.test(url))
+    return false;
   // known generate shapes
   if (/[Gg]enerate/i.test(url)) return true;
   if (/flowMedia:/i.test(url)) return true;
@@ -21,4 +22,14 @@ export function contentLength(headers) {
     }
   }
   return -1;
+}
+
+/** Short endpoint label for UI (no host, no project id). */
+export function endpointLabel(url) {
+  if (!url) return "";
+  let s = String(url).replace(/^https?:\/\/[^/]+/i, "");
+  s = s.replace(/\/projects\/[^/]+/i, "/projects/<redacted>");
+  // keep last path segments readable
+  if (s.length > 72) s = "…" + s.slice(-70);
+  return s;
 }

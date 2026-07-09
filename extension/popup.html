@@ -14,7 +14,7 @@
         <span class="logo">FF</span>
         <div>
           <h1>Flow Fixer</h1>
-          <p class="tag">AUTO-THROTTLE · live reliability</p>
+          <p class="tag">v0.4 · AUTO-THROTTLE · local</p>
         </div>
       </div>
       <div id="levelPill" class="pill idle">idle · open Flow</div>
@@ -54,10 +54,11 @@
       <p class="hint">
         Slow = molasses under the scorer. Fast = Casey Jones at the whistle.
         Auto downshifts on soft/hard, climbs on clean OK streaks.
+        Project IDs are redacted in the diag strip for safer screenshots.
       </p>
     </section>
 
-    <section class="stats">
+    <section class="stats stats5">
       <div class="stat">
         <div class="n" id="nTotal">0</div>
         <div class="l">gens</div>
@@ -74,7 +75,12 @@
         <div class="n" id="nHard">0</div>
         <div class="l">hard</div>
       </div>
+      <div class="stat filter">
+        <div class="n" id="nFilter">0</div>
+        <div class="l">filter</div>
+      </div>
     </section>
+    <p id="passLine" class="pass-line">pass rate —</p>
 
     <section class="card">
       <h2>Fan position pass %</h2>
@@ -97,12 +103,14 @@
       </label>
     </section>
     <section class="actions secondary">
-      <button type="button" id="btnExport" class="ghost">Export</button>
+      <button type="button" id="btnExport" class="ghost">Export JSON</button>
+      <button type="button" id="btnCopy" class="ghost">Copy report</button>
       <button type="button" id="btnClear" class="ghost danger">Clear</button>
     </section>
+    <p id="toastMsg" class="toast-msg hidden"></p>
 
     <footer>
-      <span>Paces <em>your</em> clicks only · last 500 events · no prompts uploaded</span>
+      <span>Paces <em>your</em> clicks only · last 500 · IDs redacted · no prompts uploaded</span>
       <span class="dot">·</span>
       <span>Not a bypass tool</span>
     </footer>

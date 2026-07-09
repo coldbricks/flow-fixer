@@ -47,11 +47,15 @@ def _resp_size(e: dict[str, Any]) -> int:
 def is_generate_url(url: str) -> bool:
     if "aisandbox" not in url:
         return False
-    if not re.search(r"[Gg]enerate", url):
+    if re.search(r"batchCheck|Status|LogFrontend|batchLog|uploadImage|/credits", url, re.I):
         return False
-    if "Status" in url or "LogFrontend" in url:
-        return False
-    return True
+    if re.search(r"[Gg]enerate", url):
+        return True
+    if re.search(r"flowMedia:", url):
+        return True
+    if re.search(r"batchAsync", url) and not re.search(r"Check|Status", url, re.I):
+        return True
+    return False
 
 
 def classify_outcome(status: int, body: str, size: int) -> str:
