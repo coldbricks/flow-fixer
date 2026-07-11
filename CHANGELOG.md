@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.2 — cross-platform extension archive
+
+- Package extension ZIP entries with forward-slash paths so archives unpack correctly on Linux and macOS
+- Validate release archives for portable paths and a root-level `manifest.json`
+
 ## 0.4.1 — peer-review hardening
 
 - Empty-body 429 classification uses **size bands** (not only exact 287/297)  
